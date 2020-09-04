@@ -1,0 +1,72 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: lambda-av-update
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+package:
+  artifact: ../lambda-av.zip # @TODO move to S3 e.g. https://s3.amazonaws.com/some-bucket/service-artifact.zip
+
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: dev
+  region: ap-southeast-2
+  iamRoleStatements:
+    - Effect: Allow
+      Sid: WriteCloudWatchLogs
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
+    - Effect: Allow
+      Sid: s3GetAndPutWithTagging
+      Action:
+        - s3:GetObject
+        - s3:GetObjectTagging
+        - s3:PutObject
+        - s3:PutObjectTagging
+        - s3:PutObjectVersionTagging
+      Resource:
+        - arn:aws:s3:::sidekicker-av-definition/*
+    - Effect: Allow
+      Sid: s3HeadObject
+      Action: s3:ListBucket
+      Resource:
+        - arn:aws:s3:::sidekicker-av-definition/*
+        - arn:aws:s3:::sidekicker-av-definition
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+functions:
+  bucket-av-update:
+    handler: update.lambda_handler
+    name: ${self:provider.stage, 'dev'}-bucket-antivirus-update
+    description: This function accesses the user’s ClamAV instance to download updated definitions using freshclam. It is recommended to run this every 3 hours to stay protected from the latest threats.
+    memorySize: 1024
+    timeout: 300
+    environment:
+      AV_DEFINITION_S3_BUCKET: sidekicker-av-definition
+    events:
+      - eventBridge:
+          schedule: rate(3 hours)
+
