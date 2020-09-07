@@ -38,3 +38,13 @@ In addition, it's can block file download from the S3. This behavior to be decid
 
 After [building](https://github.com/upsidetravel/bucket-antivirus-function#installation) the function from the source 
 the output Lambda Function should be used   
+
+Testing
+-------
+
+Use [EICAR ANTI MALWARE TEST FILE](https://www.eicar.org/?page_id=3950) to download a "test virus" and do a real world test.
+
+The EICAR is non-viral but is detected by anti-virus software as if it a virus code. 
+
+
+
