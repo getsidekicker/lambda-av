@@ -88,4 +88,8 @@ functions:
       AV_DEFINITION_S3_BUCKET: sidekicker-av-definition
       AV_STATUS_SNS_ARN: arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
       AV_STATUS_SNS_PUBLISH_CLEAN: False
-
+    events:
+      - s3:
+          bucket: dev.getsidekicker.com-sensitive
+          event: s3:ObjectCreated:*
+          existing: true
