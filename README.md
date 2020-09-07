@@ -14,7 +14,7 @@ which is a ClamAV antivirus AWS Lambda wrapper function written in Python.
 
 [Serverless Framework](https://www.serverless.com/) is used to deploy the code to the AWS infrastructure. 
 
-(#buckets-list)Scanned buckets
+Scanned buckets
 ---------------
 
 AWS S3 buckets to be included in the scan:
@@ -28,7 +28,7 @@ The project consist of two main services:
 - update:  AWS Lambda Function to update the antivirus definition files 
 - scan: Virus scanner AWS Lambda Function
 
-After uploading files to one of the [buckets](#buckets-list) there is an event triggered which runs 
+After uploading files to one of the [buckets](#scanned-buckets) there is an event triggered which runs 
 the scanner against the uploaded file. If the file is infected, the scanner function will send alert message on the 
 Slack, to the "AWS Alert" channel. 
 
