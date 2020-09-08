@@ -46,6 +46,7 @@ provider:
         - s3:PutObjectVersionTagging
       Resource:
         - arn:aws:s3:::dev.getsidekicker.com-sensitive/*
+        - arn:aws:s3:::dev.getsidekicker.com-public/*
     - Sid: s3AntiVirusDefinitions
       Action:
         - s3:GetObject
