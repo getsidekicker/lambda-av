@@ -26,7 +26,7 @@ package:
 provider:
   name: aws
   runtime: python3.7
-  stage: dev
+  stage: prod
   region: ap-southeast-2
   iamRoleStatements:
     - Sid: WriteCloudWatchLogs
@@ -45,8 +45,8 @@ provider:
         - s3:PutObjectTagging
         - s3:PutObjectVersionTagging
       Resource:
-        - arn:aws:s3:::dev.getsidekicker.com-sensitive/*
-        - arn:aws:s3:::dev.getsidekicker.com-public/*
+        - arn:aws:s3:::getsidekicker.com-sensitive/*
+        - arn:aws:s3:::getsidekicker.com-public/*
     - Sid: s3AntiVirusDefinitions
       Action:
         - s3:GetObject
@@ -59,7 +59,7 @@ provider:
       Action:
         - kms:Decrypt
       Resource:
-        - arn:aws:s3:::dev.getsidekicker.com-sensitive/*
+        - arn:aws:s3:::getsidekicker.com-sensitive/*
     - Sid: snsPublish
       Effect: Allow
       Action:
@@ -81,16 +81,18 @@ provider:
 functions:
   bucket-antivirus-scan:
     handler: scan.lambda_handler
-    name: ${self:provider.stage, 'dev'}-bucket-av-scan
+    name: ${self:provider.stage, 'prod'}-bucket-av-scan
     description: This function performs scan of the S3 objects using ClamAV.
-    memorySize: 1024
-    timeout: 300
+    memorySize: 1536
+    timeout: 360
     environment:
       AV_DEFINITION_S3_BUCKET: sidekicker-av-definition
       AV_STATUS_SNS_ARN: arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
       AV_STATUS_SNS_PUBLISH_CLEAN: False
     events:
       - s3:
-          bucket: dev.getsidekicker.com-sensitive
+          bucket: getsidekicker.com-sensitive
           event: s3:ObjectCreated:*
           existing: true
+          rules:
+            - prefix: av-test/
