@@ -18,7 +18,7 @@ service: lambda-av-scan
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+frameworkVersion: '3'
 
 package:
   artifact: ../lambda-av.zip
@@ -28,51 +28,59 @@ provider:
   runtime: python3.7
   stage: prod
   region: ap-southeast-2
-  iamRoleStatements:
-    - Sid: WriteCloudWatchLogs
-      Effect: Allow
-      Action:
-        - logs:CreateLogGroup
-        - logs:CreateLogStream
-        - logs:PutLogEvents
-      Resource: "*"
-    - Sid: s3AntiVirusScan
-      Effect: Allow
-      Action:
-        - s3:GetObject
-        - s3:GetObjectTagging
-        - s3:GetObjectVersion
-        - s3:PutObjectTagging
-        - s3:PutObjectVersionTagging
-      Resource:
-        - arn:aws:s3:::getsidekicker.com-sensitive/*
-        - arn:aws:s3:::getsidekicker.com-public/*
-    - Sid: s3AntiVirusDefinitions
-      Action:
-        - s3:GetObject
-        - s3:GetObjectTagging
-      Effect: Allow
-      Resource:
-        - arn:aws:s3:::sidekicker-av-definition/*
-    - Sid: kmsDecrypt
-      Effect: Allow
-      Action:
-        - kms:Decrypt
-      Resource:
-        - arn:aws:s3:::getsidekicker.com-sensitive/*
-    - Sid: snsPublish
-      Effect: Allow
-      Action:
-        - sns:Publish
-      Resource:
-        - arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
-        - arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
-    - Sid: s3HeadObject
-      Effect: Allow
-      Action: s3:ListBucket
-      Resource:
-        - arn:aws:s3:::sidekicker-av-definition/*
-        - arn:aws:s3:::sidekicker-av-definition
+  tracing:
+    lambda: true
+  iam:
+    role:
+      managedPolicies:
+        - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+      statements:
+        - Sid: WriteCloudWatchLogs
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+        - Sid: s3AntiVirusScan
+          Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:GetObjectTagging
+            - s3:GetObjectVersion
+            - s3:PutObjectTagging
+            - s3:PutObjectVersionTagging
+          Resource:
+            - arn:aws:s3:::getsidekicker.com-sensitive/*
+            - arn:aws:s3:::getsidekicker.com-public/*
+            - arn:aws:s3:::map-api-production-sensitive/*
+        - Sid: s3AntiVirusDefinitions
+          Action:
+            - s3:GetObject
+            - s3:GetObjectTagging
+          Effect: Allow
+          Resource:
+            - arn:aws:s3:::sidekicker-av-definition/*
+        - Sid: kmsDecrypt
+          Effect: Allow
+          Action:
+            - kms:Decrypt
+          Resource:
+            - arn:aws:s3:::getsidekicker.com-sensitive/*
+            - arn:aws:s3:::map-api-production-sensitive/*
+        - Sid: snsPublish
+          Effect: Allow
+          Action:
+            - sns:Publish
+          Resource:
+            - arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
+            - arn:aws:sns:ap-southeast-2:523351685636:slack_server_monitoring
+        - Sid: s3HeadObject
+          Effect: Allow
+          Action: s3:ListBucket
+          Resource:
+            - arn:aws:s3:::sidekicker-av-definition/*
+            - arn:aws:s3:::sidekicker-av-definition
 #
 # you can define service wide environment variables here
 #  environment:
@@ -94,5 +102,3 @@ functions:
           bucket: getsidekicker.com-sensitive
           event: s3:ObjectCreated:*
           existing: true
-          rules:
-            - prefix: av-test/

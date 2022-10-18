@@ -18,7 +18,7 @@ service: lambda-av-update
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+frameworkVersion: '3'
 
 package:
   artifact: ../lambda-av.zip
@@ -28,30 +28,38 @@ provider:
   runtime: python3.7
   stage: prod
   region: ap-southeast-2
-  iamRoleStatements:
-    - Effect: Allow
-      Sid: WriteCloudWatchLogs
-      Action:
-        - logs:CreateLogGroup
-        - logs:CreateLogStream
-        - logs:PutLogEvents
-      Resource: "*"
-    - Effect: Allow
-      Sid: s3GetAndPutWithTagging
-      Action:
-        - s3:GetObject
-        - s3:GetObjectTagging
-        - s3:PutObject
-        - s3:PutObjectTagging
-        - s3:PutObjectVersionTagging
-      Resource:
-        - arn:aws:s3:::sidekicker-av-definition/*
-    - Effect: Allow
-      Sid: s3HeadObject
-      Action: s3:ListBucket
-      Resource:
-        - arn:aws:s3:::sidekicker-av-definition/*
-        - arn:aws:s3:::sidekicker-av-definition
+  eventBridge:
+    useCloudFormation: false
+  tracing:
+    lambda: true
+  iam:
+    role:
+      managedPolicies:
+        - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+      statements:
+        - Effect: Allow
+          Sid: WriteCloudWatchLogs
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+        - Effect: Allow
+          Sid: s3GetAndPutWithTagging
+          Action:
+            - s3:GetObject
+            - s3:GetObjectTagging
+            - s3:PutObject
+            - s3:PutObjectTagging
+            - s3:PutObjectVersionTagging
+          Resource:
+            - arn:aws:s3:::sidekicker-av-definition/*
+        - Effect: Allow
+          Sid: s3HeadObject
+          Action: s3:ListBucket
+          Resource:
+            - arn:aws:s3:::sidekicker-av-definition/*
+            - arn:aws:s3:::sidekicker-av-definition
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
@@ -60,7 +68,7 @@ functions:
   bucket-av-update:
     handler: update.lambda_handler
     name: ${self:provider.stage, 'prod'}-bucket-antivirus-update
-    description: This function accesses the user’s ClamAV instance to download updated definitions using freshclam. It is recommended to run this every 3 hours to stay protected from the latest threats.
+    description: This function accesses the user's ClamAV instance to download updated definitions using freshclam. It is recommended to run this every 3 hours to stay protected from the latest threats.
     memorySize: 1024
     timeout: 300
     environment:
@@ -68,4 +76,3 @@ functions:
     events:
       - eventBridge:
           schedule: rate(3 hours)
-
