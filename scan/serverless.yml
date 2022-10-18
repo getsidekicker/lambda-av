@@ -102,5 +102,3 @@ functions:
           bucket: getsidekicker.com-sensitive
           event: s3:ObjectCreated:*
           existing: true
-          rules:
-            - prefix: av-test/
